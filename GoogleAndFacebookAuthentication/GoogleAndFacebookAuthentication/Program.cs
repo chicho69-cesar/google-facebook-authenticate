@@ -23,8 +23,8 @@ builder.Services.AddAuthentication(options => {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 })
     .AddCookie(options => {
-        //options.LoginPath = "/account/google-login";
-        options.LoginPath = "/account/facebook-login";
+        options.LoginPath = "/account/google-login";
+        //options.LoginPath = "/account/facebook-login";
     })
     .AddGoogle(options => {
         options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
@@ -34,6 +34,8 @@ builder.Services.AddAuthentication(options => {
         options.AppId = builder.Configuration["Authentication:Facebook:AppId"];
         options.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"];
     });
+
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 

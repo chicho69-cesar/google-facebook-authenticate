@@ -4,16 +4,20 @@ using Microsoft.AspNetCore.Authentication.Facebook;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace GoogleAndFacebookAuthentication.Controllers {
     [AllowAnonymous, Route("account")]
     public class AccountController : Controller {
         private readonly ILogger<AccountController> _logger;
+        private readonly HttpContext httpContext;
 
         public AccountController(
-            ILogger<AccountController> logger
+            ILogger<AccountController> logger,
+            IHttpContextAccessor httpContextAccesor
         ) {
             _logger = logger;
+            httpContext = httpContextAccesor.HttpContext;
         }
 
         [Route("google-login")]
@@ -34,6 +38,8 @@ namespace GoogleAndFacebookAuthentication.Controllers {
                     claim.Type,
                     claim.Value
                 });
+
+            _logger.LogWarning($"{GetUserId()}");
 
             return Json(claims);
         }
@@ -56,8 +62,27 @@ namespace GoogleAndFacebookAuthentication.Controllers {
                     claim.Type,
                     claim.Value
                 });
+            
+            _logger.LogWarning($"{GetUserId()}");
 
             return Json(claims);
+        }
+
+        private string GetUserId() {
+            if (httpContext.User.Identity.IsAuthenticated) {
+                var idClaim = httpContext.User.Claims
+                    .Where(x => x.Type == ClaimTypes.NameIdentifier)
+                    .FirstOrDefault();
+
+                _logger.LogWarning($"{idClaim}");
+
+                var id = (idClaim.Value);
+
+                return id;
+            } else {
+                //throw new ApplicationException("El usuario no esta autenticado");
+                return "-1";
+            }
         }
     }
 }
